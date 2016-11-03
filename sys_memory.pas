@@ -91,24 +91,10 @@ var
   Check: THCheck;
   Find: THFind;
 
-
-  //#define GMOR_PATTERN "\xFF\x15\x00\x00\x00\x00\x8B\xF8\x85\xDB\x74\x1F\x80\x7B\x4F\x00\x74\x19\x85\xFF\x75\x15"
-  //#define GMOR_MASK "xx????xxxxxxxxxxxxxxxx"
-
-  Mask_D3DReset_7:  array [0..14] of Byte = ($57,$FF,$15,$FF,$FF,$FF,$FF,$8B,$45,$0C,$33,$F6,$39,$70,$20);
-  Mask_D3DReset_8:  array [0..18] of Byte = ($33,$C9,$39,$4F,$20,$75,$79,$8D,$44,$24,$38,$89,$44,$24,$1C,$32,$C0,$8B,$DE);
-  Mask_D3DReset_9:  array [0..12] of Byte = ($8B,$CE,$E8,$00,$00,$00,$00,$8B,$4E,$0C,$48,$F7,$D8);
-  Mask_D3DReset_0:  array [0..12] of Byte = ($8B,$CE,$E8,$FF,$FF,$FF,$FF,$8B,$4E,$0C,$48,$F7,$D8);
-
-  Mask_D3DEScene_7: array [0..53] of Byte = ($57,$FF,$15,$FF,$FF,$FF,$FF,$E9,$FF,$FF,$FF,$FF,$39,$5F,$18,$74,$07,$57,$FF,$15,$FF,$FF,$FF,$FF,$B8,$FF,$FF,$FF,$FF,$8B,$4D,$F4,$64,$89,$0D,$FF,$FF,$FF,$FF,$59,$5F,$5E,$5B,$8B,$E5,$5D,$C2,$04,$00,$68,$AD,$06,$FF,$FF);
-  Mask_D3DEScene_8: array [0..22] of Byte = ($33,$C0,$E8,$FF,$FF,$FF,$FF,$C2,$04,$00,$8B,$DF,$EB,$8E,$53,$FF,$15,$FF,$FF,$FF,$FF,$EB,$90);
-  Mask_D3DEScene_9: array [0..22] of Byte = ($33,$C0,$E8,$FF,$FF,$FF,$FF,$C2,$04,$00,$8B,$DF,$EB,$8E,$53,$FF,$15,$FF,$FF,$FF,$FF,$EB,$90);
-  Mask_D3DEScene_0: array [0..22] of Byte = ($33,$C0,$E8,$FF,$FF,$FF,$FF,$C2,$04,$00,$8B,$DF,$EB,$8E,$53,$FF,$15,$FF,$FF,$FF,$FF,$EB,$90);
-
   Mask_TraceLine:   array [0..10] of Byte = ($55,$8B,$EC,$83,$E4,$F0,$83,$EC,$7C,$56,$52);
   Mask_GlowObject:  array [0..13] of Byte = ($A1,$FF,$FF,$FF,$FF,$A8,$01,$75,$FF,$0F,$57,$C0,$C7,$05);
   Mask_Traverce:    array [0..30] of Byte = ($55,$8B,$EC,$8B,$01,$FF,$75,$08,$FF,$90,$FF,$FF,$FF,$FF,$FF,$75,$10,$8B,$C8,$FF,$75,$0C,$8B,$10,$FF,$52,$0C,$5D,$C2,$0C,$FF);
-  Mask_CreateMove1:  array [0..24] of Byte = ($55,$8B,$EC,$83,$EC,$08,$FF,$15,$FF,$FF,$FF,$FF,$84,$C0,$74,$32,$A1,$FF,$FF,$FF,$FF,$89,$45,$F8,$A1);
+  Mask_CreateMove1: array [0..24] of Byte = ($55,$8B,$EC,$83,$EC,$08,$FF,$15,$FF,$FF,$FF,$FF,$84,$C0,$74,$32,$A1,$FF,$FF,$FF,$FF,$89,$45,$F8,$A1);
   Mask_CreateMove2: array [0..43] of Byte = ($55,$8B,$EC,$8B,$FF,$FF,$FF,$FF,$FF,$85,$C9,$75,$06,$B0,$01,$5D,$C2,$08,$00,$8B,$01,$FF,$75,$0C,$F3,$0F,$10,$45,$08,$51,$8B,$FF,$FF,$FF,$FF,$FF,$F3,$0F,$11,$04,$24,$FF,$D0,$5D);
   Mask_VClient:     array [0..9]  of Byte = ($56,$43,$6C,$69,$65,$6E,$74,$30,$31,$37);
   Mask_ForceUpdate: array [0..12] of Byte = ($3B,$91,$FF,$FF,$FF,$FF,$74,$07,$40,$74,$E1,$32,$C0); // +2
@@ -116,8 +102,6 @@ var
   Mask_SendPacket:  array [0..4] of Byte = ($B3,$01,$8B,$01,$8B); // + $1;
   Mask_ForceAttack: array [0..2] of Byte = ($A8,$01,$BF); // + 13
   Mask_DrawPoints:  array [0..5] of Byte = ($8B,$7C,$24,$10,$03,$F8); //
-
-  //Mask_EntityList:  array [] of Byte = ($E6,$04,$81,$C6,$FF,$FF,$FF,$FF,$89);
 
 implementation
 
@@ -187,7 +171,6 @@ begin
   Result := Mem.FindPattern(Client.Address, Client.Address + $4CAE000, @Mask_CreateMove2, SizeOf(Mask_CreateMove2), 0);
 end;
 
-
 function THFind.MaxPlayers: Pointer;
 begin
   Result := Mem.FindPattern(Client.Address, Client.Address + $4CAE000, @Mask_MaxPlayers, SizeOf(Mask_MaxPlayers), 0);
@@ -235,9 +218,7 @@ end;
 
 function THEngine.GetViewPosition(flags: cardinal): vec3_t;
 begin
-  result.x := 0;
-  result.y := 0;
-  result.z := 64;
+  result.x := 0; result.y := 0; result.z := 64;
   if (flags = 263) or (flags = 775) then result.z := result.z - 15;
 end;
 
@@ -272,8 +253,7 @@ procedure THMemory.ReplaceF(Address: Cardinal; Pattern: Pointer; Size: Cardinal)
 var
   i: Cardinal;
 begin
-  for i := 0 to Size - 1 do
-  PByte(Cardinal(Address) + i)^ := PByte(Cardinal(Pattern) + i)^;
+  for i := 0 to Size - 1 do PByte(Cardinal(Address) + i)^ := PByte(Cardinal(Pattern) + i)^;
 end;
 
 function THMemory.FindPattern(StartAddr, EndAddr: Cardinal; const Pattern: Pointer; PatternSize: Cardinal; Offset: Longint): Pointer;
@@ -293,27 +273,6 @@ function THMemory.Read(Address: Cardinal): Cardinal;
 begin
   Result := PCardinal(Cardinal(Address))^;
 end;
-
-// External: ===================================================================
-
-procedure THMemory.ReplaceEx(const Address, Pattern: Pointer; Size: Cardinal);
-var
-  Write: size_t;
-  Protect, Protect2: Cardinal;
-begin
-  VirtualProtectEx(Base.HProcess, Pointer(Address), Size, PAGE_EXECUTE_READWRITE, Protect);
-  WriteProcessMemory(Base.HProcess, Address, Pattern, Size, Write);
-  VirtualProtectEx(Base.HProcess, Pointer(Address), Size, Protect, Protect2);
-end;
-
-function THMemory.ReadEx(Address: Cardinal): Cardinal;
-var
-  Read: size_t;
-begin
-  ReadProcessMemory(Base.HProcess, Ptr(Address), @Result, 4, Read);
-end;
-
-// End of external; ============================================================
 
 function THSystem.GetWinVersion: winversion_t;
 var
